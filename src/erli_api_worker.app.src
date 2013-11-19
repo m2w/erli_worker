@@ -1,0 +1,11 @@
+%%-*- mode: erlang -*-
+{application, erli_api_worker,
+ [{description, "erli API worker application"},
+  {vsn, "0.2"},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel, stdlib, inets, crypto, egeoip]},
+  {mod, {erli_api_worker_app, []}},
+  {env, []}
+ ]
+}.

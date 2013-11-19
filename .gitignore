@@ -1,0 +1,7 @@
+ebin/
+Mnesia.*
+log/
+ct/logs/
+*.jpeg
+rel/
+!rel/[files/|reltool.config]
