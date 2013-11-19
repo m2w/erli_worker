@@ -109,7 +109,7 @@ generate_visits(0, _Paths, Acc) ->
 generate_visits(N, Paths, Acc) ->
     X = random:uniform(length(Paths)),
     Id = (lists:nth(X, Paths))#path.id,
-    Loc = erli_api_worker_utils:get_location(gen_rand_ip()),
+    Loc = erli_worker_utils:get_location(gen_rand_ip()),
     case erli_storage:write(#visit{path_id=Id, geo_location=Loc}) of
 	{error, _Error} ->
 	    generate_visits(N, Paths, Acc);
@@ -137,7 +137,7 @@ generate_targets(N, Acc) ->
 
 
 make_target() ->
-    {ok, FL} = application:get_env(erli_api_worker, flag_limit),
+    {ok, FL} = application:get_env(erli_worker, flag_limit),
     Domain = generate_domain(),
     TLD = generate_tld(),
     Url = <<"http://", Domain/bitstring, ".", TLD/bitstring>>,

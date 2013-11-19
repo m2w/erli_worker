@@ -1,10 +1,10 @@
 SHELL=/bin/sh
-APP:=erli_api_worker
+APP:=erli_worker
 REBAR:=./rebar
 ERL=erl
 CT=ct_run
 ROOT=`git rev-parse --show-toplevel`
-DEV_CONFIG=$(ROOT)/erli_api_worker_dev.config
+DEV_CONFIG=$(ROOT)/erli_worker_dev.config
 
 
 dep:

@@ -6,7 +6,7 @@
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_gen_res).
+-module(erli_worker_gen_res).
 
 %% Webmachine Callbacks
 -export([allowed_methods/2, as_json/2,
@@ -63,7 +63,7 @@ malformed_request(RD, {_Resource, Relation} = Ctx) when ?is_object(Relation) ->
     {false, RD, Ctx};
 malformed_request(RD, {_Resource, Relation} = Ctx)
   when ?is_collection(Relation) ->
-    case erli_api_worker_utils:parse_range_header(RD, Relation) of
+    case erli_worker_utils:parse_range_header(RD, Relation) of
 	{error, invalid_range} ->
 	    ContentRange = "*/" ++
 		integer_to_list(erli_storage:count(Relation)),
@@ -73,7 +73,7 @@ malformed_request(RD, {_Resource, Relation} = Ctx)
 	Range -> {false, RD, {Ctx, Range}}
     end;
 malformed_request(RD, Ctx) when ?is_collection(Ctx) ->
-    case erli_api_worker_utils:parse_range_header(RD, Ctx) of
+    case erli_worker_utils:parse_range_header(RD, Ctx) of
 	{error, invalid_range} ->
 	    ContentRange = "*/" ++
 		integer_to_list(erli_storage:count(Ctx)),
@@ -149,15 +149,15 @@ resource_exists(RD, {{ObjectType, Relation}, Range} = Ctx)
 	{false, Obj} -> {false, RD, {ObjectType, Obj}};
 	{true, _Obj} ->
 	    Data = erli_storage:read_bulk(Relation, Range),
-	    Meta = erli_api_worker_utils:meta_proplist(Relation, Range),
+	    Meta = erli_worker_utils:meta_proplist(Relation, Range),
 	    {true, RD, {Relation, {Meta, Data}}}
     end;
 resource_exists(RD, {CollectionType, Range}) ->
     Data = erli_storage:read_bulk(CollectionType,
 				      Range),
-    Meta = erli_api_worker_utils:meta_proplist(CollectionType, Range),
+    Meta = erli_worker_utils:meta_proplist(CollectionType, Range),
     ContentRangeHeader =
-	erli_api_worker_utils:build_content_range_header(CollectionType,
+	erli_worker_utils:build_content_range_header(CollectionType,
 					      Meta),
     NRD = wrq:set_resp_header("Content-Range",
 			      ContentRangeHeader, RD),
@@ -175,7 +175,7 @@ previously_existed(RD, Ctx) -> {false, RD, Ctx}.
 
 -spec generate_etag(rd(), term()) -> {string(), rd(), term()}.
 generate_etag(RD, Ctx) ->
-    Etag = erli_api_worker_utils:generate_etag(Ctx),
+    Etag = erli_worker_utils:generate_etag(Ctx),
     {Etag, RD, Ctx}.
 
 -spec content_types_provided(rd(), term()) ->
@@ -190,15 +190,15 @@ content_types_provided(RD, Ctx) ->
 as_json(RD, {ObjectType, Rec} = Ctx) when ?is_object(ObjectType) ->
     maybe_record_visit(RD, Ctx),
     CollectionType =
-	erli_api_worker_utils:obj_type_to_col_type(ObjectType),
+	erli_worker_utils:obj_type_to_col_type(ObjectType),
     Key = atom_to_binary(CollectionType, latin1),
-    Data = jsx:encode([{Key, erli_api_worker_utils:to_proplist(Rec)}]),
+    Data = jsx:encode([{Key, erli_worker_utils:to_proplist(Rec)}]),
     {Data, RD, Ctx};
 as_json(RD,
 	{CollectionType, {Meta, Collection}} = Ctx) ->
     Key = atom_to_binary(CollectionType, latin1),
     Data = jsx:encode([{Key,
-			erli_api_worker_utils:to_proplist(Collection)},
+			erli_worker_utils:to_proplist(Collection)},
 		       {<<"meta">>, Meta}]),
     {Data, RD, Ctx}.
 
@@ -213,7 +213,7 @@ process_post(RD, Ctx) ->
 						      RD))
     of
 	{"application/x-www-form-urlencoded", _} ->
-	    Form = erli_api_worker_forms:http_body_to_form(wrq:req_body(RD)),
+	    Form = erli_worker_forms:http_body_to_form(wrq:req_body(RD)),
 	    handle_post(Form, RD, Ctx);
 	{"application/json", _} ->
 	    Form = jsx:decode(wrq:req_body(RD)),
@@ -243,7 +243,7 @@ delete_completed(RD, {_ObjectType, Obj} = Ctx) when is_record(Obj, path) ->
 			    {true, rd(), {object_type(), object()} |
 			     {collection_type(), collection()}}.
 finish_request(RD, Ctx) ->
-    WL = erli_api_worker_utils:get_env(cors_whitelist),
+    WL = erli_worker_utils:get_env(cors_whitelist),
     RD1 = wrq:set_resp_header("Cache-Control",
 			       "max-age=86400, must-revalidate", RD),
     RD2 = wrq:set_resp_header("Access-Control-Allow-Origin", WL, RD1),
@@ -257,7 +257,7 @@ finish_request(RD, Ctx) ->
 -spec maybe_record_visit(rd(), {path, #path{}}) ->
 				ignore | #visit{}.
 maybe_record_visit(RD, {path, Record}) ->
-    Loc = erli_api_worker_utils:get_location(wrq:peer(RD)),
+    Loc = erli_worker_utils:get_location(wrq:peer(RD)),
     Visit = #visit{path_id = Record#path.id,
 		   geo_location = Loc},
     erli_storage:write(Visit);
@@ -268,7 +268,7 @@ maybe_record_visit(_RD, _) -> ignore.
 			 {{halt, 409}, rd(), {p_col_type(), p_col()}} |
 			 {{halt, 422}, rd(), {p_col_type(), p_col()}}.
 handle_post(Form, RD, {targets, {_Meta, _Collection}} = Ctx) ->
-    case erli_api_worker_forms:validate(Form,
+    case erli_worker_forms:validate(Form,
 			     [{<<"target_url">>, [required, is_url]}])
     of
 	valid ->
@@ -276,11 +276,11 @@ handle_post(Form, RD, {targets, {_Meta, _Collection}} = Ctx) ->
 	    maybe_store(targets, Target, RD, Ctx);
 	Errors ->
 	    Body = jsx:encode([{<<"formErrors">>, Errors}]),
-	    NRD = erli_api_worker_utils:add_json_response(RD, Body),
+	    NRD = erli_worker_utils:add_json_response(RD, Body),
 	    {{halt, 422}, NRD, Ctx}
     end;
 handle_post(Form, RD, {paths, {_Meta, _Collection}} = Ctx) ->
-    case erli_api_worker_forms:validate(Form,
+    case erli_worker_forms:validate(Form,
 			     [{<<"target_id">>, [required, is_target_id]},
 			      {<<"custom_id">>, [is_id]}])
     of
@@ -289,7 +289,7 @@ handle_post(Form, RD, {paths, {_Meta, _Collection}} = Ctx) ->
 	    maybe_store(paths, Path, RD, Ctx);
 	Errors ->
 	    Body = jsx:encode([{<<"formErrors">>, Errors}]),
-	    NRD = erli_api_worker_utils:add_json_response(RD, Body),
+	    NRD = erli_worker_utils:add_json_response(RD, Body),
 	    {{halt, 422}, NRD, Ctx}
     end.
 
@@ -311,24 +311,24 @@ maybe_store(CollectionType, Record, RD, Ctx) ->
 	 {conflict, {SubmittedRecord, ExistingRecord}}} ->
 	    Body =
 		jsx:encode([{<<"conflictingEntity">>,
-			     erli_api_worker_utils:to_proplist(ExistingRecord)},
+			     erli_worker_utils:to_proplist(ExistingRecord)},
 			    {<<"submittedEntity">>,
-			     erli_api_worker_utils:to_proplist(SubmittedRecord)}
+			     erli_worker_utils:to_proplist(SubmittedRecord)}
 			   ]),
-	    NRD = erli_api_worker_utils:add_json_response(RD, Body),
+	    NRD = erli_worker_utils:add_json_response(RD, Body),
 	    {{halt, 409}, NRD, Ctx};
 	{error, Error} ->
 	    %% @TODO: improve the error handling/format
 	    Body = jsx:encode([{<<"errors">>,
 				atom_to_list(Error)}]),
-	    NRD = erli_api_worker_utils:add_json_response(RD, Body),
+	    NRD = erli_worker_utils:add_json_response(RD, Body),
 	    {{halt, 422}, NRD, Ctx};
 	SavedTarget ->
 	    Body = jsx:encode([{atom_to_binary(CollectionType,
 					       latin1),
-				erli_api_worker_utils:to_proplist(SavedTarget)}
+				erli_worker_utils:to_proplist(SavedTarget)}
 			      ]),
-	    NRD = erli_api_worker_utils:add_json_response(RD, Body),
+	    NRD = erli_worker_utils:add_json_response(RD, Body),
 	    {true, NRD, Ctx}
     end.
 

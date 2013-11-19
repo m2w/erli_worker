@@ -5,7 +5,7 @@
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_err_handler).
+-module(erli_worker_err_handler).
 
 %% API
 -export([render_error/3]).

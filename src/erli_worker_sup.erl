@@ -5,7 +5,7 @@
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_sup).
+-module(erli_worker_sup).
 -behaviour(supervisor).
 
 %% API
@@ -46,7 +46,7 @@ init([]) ->
     {ok, Ip} = application:get_env(webmachine, ip),
     {ok, Port} = application:get_env(webmachine, port),
     {ok, App} = application:get_application(?MODULE),
-    PrivDir = erli_api_worker_utils:priv_dir(App),
+    PrivDir = erli_worker_utils:priv_dir(App),
     DispatchDir = case application:get_env(webmachine, dispatch_dir, PrivDir) of
 		      {ok, Dir} -> Dir;
 		      Dir -> Dir

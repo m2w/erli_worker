@@ -26,7 +26,7 @@
 -spec write(object()) -> object() | conflict_error() | mnesia_error().
 write(Obj) when is_record(Obj, target) ->
     RecordNumber = mnesia:dirty_update_counter(counters, target, 1),
-    LastModified = erli_api_worker_utils:unix_timestamp(),
+    LastModified = erli_worker_utils:unix_timestamp(),
     Object = Obj#target{record_number=RecordNumber, last_modified=LastModified},
     case mnesia:dirty_index_read(targets, Object#target.url, url) of
 	[] ->
@@ -74,8 +74,8 @@ write(Obj) when is_record(Obj, path) ->
     end;
 write(Obj) when is_record(Obj, visit) ->
     Id = mnesia:dirty_update_counter(counters, visit, 1),
-    Time = erli_api_worker_utils:unix_timestamp(),
-    UpdatedObject = Obj#visit{id=erli_api_worker_utils:int_to_bitstring(Id),
+    Time = erli_worker_utils:unix_timestamp(),
+    UpdatedObject = Obj#visit{id=erli_worker_utils:int_to_bitstring(Id),
 			      record_number=Id, time=Time},
     ok = mnesia:dirty_write(visits, UpdatedObject),
     UpdatedObject.
@@ -108,8 +108,8 @@ read_bulk(visits, {Start, End}) ->
 -spec delete(object()) ->
 		    {request_accepted | target_banned, object()}.
 delete(Object) when is_record(Object, target) ->
-    CurrentLimit = erli_api_worker_utils:get_env(flag_limit),
-    LastModified = erli_api_worker_utils:unix_timestamp(),
+    CurrentLimit = erli_worker_utils:get_env(flag_limit),
+    LastModified = erli_worker_utils:unix_timestamp(),
 
     case Object#target.flag_count of
 	FC when FC < CurrentLimit ->

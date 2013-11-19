@@ -1,11 +1,11 @@
 %%%==========================================================
 %%% @author Moritz Windelen
 %%% @version 0.2
-%%% @doc The erli_api_worker application module.
+%%% @doc The erli_worker application module.
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_app).
+-module(erli_worker_app).
 -behaviour(application).
 
 %% Application callbacks
@@ -16,7 +16,7 @@
 %%-----------------------------------------------------------
 
 start(_StartType, _StartArgs) ->
-    case erli_api_worker_sup:start_link() of
+    case erli_worker_sup:start_link() of
 	{ok, Pid} ->
 	    {ok, Pid};
 	Error ->

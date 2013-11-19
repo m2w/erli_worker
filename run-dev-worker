@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 cd `dirname $0`
-exec erl -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -s reloader -s erli_api_worker -config erli_api_worker_dev -sname erli_api_worker_dev
+exec erl -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -s reloader -s erli_worker -config erli_worker_dev -sname erli_worker_dev

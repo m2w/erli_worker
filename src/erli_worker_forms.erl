@@ -5,7 +5,7 @@
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_forms).
+-module(erli_worker_forms).
 
 %% API
 -export([http_body_to_form/1,

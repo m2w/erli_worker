@@ -5,7 +5,7 @@
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_root_res).
+-module(erli_worker_root_res).
 
 %% Webmachine Callbacks
 -export([init/1,

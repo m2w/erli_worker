@@ -22,10 +22,10 @@ init_per_suite(Config) ->
 
     application:set_env(mnesia, dir, Priv),
     application:set_env(webmachine, dispatch_dir, DataDir),
-    erli_api_worker:start(),
+    erli_worker:start(),
 
-    {ok, DefaultOffset} = application:get_env(erli_api_worker, default_collection_offset),
-    {ok, MaxOffset} = application:get_env(erli_api_worker, max_collection_offset),
+    {ok, DefaultOffset} = application:get_env(erli_worker, default_collection_offset),
+    {ok, MaxOffset} = application:get_env(erli_worker, max_collection_offset),
     {ok, Port} = application:get_env(webmachine, port),
 
     PortS = integer_to_list(Port),
@@ -35,7 +35,7 @@ init_per_suite(Config) ->
      {port, PortS}, {port_int, Port}, {root_url, RootUrl} | Config].
 
 end_per_suite(_Config) ->
-    erli_api_worker:stop().
+    erli_worker:stop().
 
 init_per_group(_GroupName, Config) ->
     Config.
@@ -234,7 +234,7 @@ idempotent_calls_to_entity(Config) ->
 delete_entity(Config) ->
     Url = <<"http://google.com">>,
     Url1 = <<"http://google.com/ban-me">>,
-    {ok, FL} = application:get_env(erli_api_worker, flag_limit),
+    {ok, FL} = application:get_env(erli_worker, flag_limit),
 
     Target = erli_storage:write(#target{url=Url}),
     AlmostBannedTarget = erli_storage:write(

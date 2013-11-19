@@ -6,7 +6,7 @@
 %%% @end
 %%%==========================================================
 
--module(erli_api_worker_utils).
+-module(erli_worker_utils).
 
 %% API
 -export([to_proplist/1,
