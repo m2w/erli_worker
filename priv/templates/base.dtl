@@ -1,0 +1,14 @@
+<!doctype html>
+<head>
+  <title>erli :: {% block title %}{% endblock %}</title>
+  <script type="text/javascript" src=" http://code.jquery.com/jquery-2.0.3.min.js"></script>
+</head>
+<body>
+  <div id="container">
+    <h1><a href="/">erli</a> <small>:: {% block heading %}{% endblock %}</small></h1>
+    <div id="main">{% block content %}{% endblock %}</div>
+  </div>
+  <footer>
+    For full access to <strong>erli</strong> functionality, please interact directly with the <a href="/docs/{% block docs %}{% endblock %}">API</a>.
+  </footer>
+</body>

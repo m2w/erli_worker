@@ -1,0 +1,47 @@
+{% extends "base.dtl" %}
+
+{% block title %}an Erlang URL shortener{% endblock %}
+{% block heading %}an Erlang URL shortener{% endblock %}
+
+{% block content %}
+erli requires javascript to function.
+<form id="erli_form">
+  <input name="target_url" id="target_url" type="text" placeholder="URL to shorten" />
+  <button type="submit">Shorten it!</button>
+</form>
+
+<script type="text/javascript">
+  $("#erli_form").submit(function(e){
+  var target = $("#target_url").val();
+  $.ajax({url: "/targets/",
+  dataType: "json",
+  data: {target_url: target},
+  type: "POST",
+  statusCode: {
+  200: function(data, status, jqXHR) {
+  var target_id = data.targets.id;
+  create_path(target_id);
+  },
+  409: function(jqXHR, status, error) {
+  var target_id = jqXHR.responseJSON.conflictingEntity.id;
+  create_path(target_id);
+  },
+  422: function() {
+  alert("not processable");
+  }
+  }
+  });
+  e.preventDefault();
+  });
+
+  function create_path(target_id) {
+  $.ajax({url: "/paths/",
+  dataType: "json",
+  data: {target_id: target_id},
+  type: "POST",
+  success: function(data, status, jqXHR) {
+  var path = data.paths;
+  }});
+  };
+</script>
+{% endblock %}
