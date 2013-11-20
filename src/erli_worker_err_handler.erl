@@ -49,7 +49,7 @@ gen_body(410, Req, _Reason) ->
      Req};
 gen_body(415, Req, _Reason) ->
     {<<"{\"errors\":",
-       "{\"message\":\"Usupported media type, currently only application/json",
+       "{\"message\":\"Usupported media type, only application/json",
        " is supported.\", \"status_code\":415}}">>,
      Req};
 gen_body(500, Req, Reason) ->
