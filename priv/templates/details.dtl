@@ -1,0 +1,28 @@
+{% extends "base.dtl" %}
+
+{% block title %}{{ path.id }}{% endblock %}
+{% block heading %}{{ path.id }}{% endblock %}
+
+{% block content %}
+This shortened URL points to <a id="target" href="#"></a>:
+<img id="thumbnail">
+
+<script type="text/javascript">
+  $(document).ready(function() {
+  $.ajax({url: "/paths/{{ path.id }}/target",
+  dataType: "json",
+  type: "GET",
+  success: function(data, status, jqXHR) {
+  var target = data.targets.rels;
+  $("#target").attr("href", target.targetUrl).text(target.targetUrl);
+  $("#thumbnail").attr("src", target.thumbnail);
+  set_href(target.targetUrl);
+  }});
+  });
+  function set_href(target) {
+  $("#target").click(function(e) {
+  window.location = target;
+  e.preventDefault();
+  })};
+</script>
+{% endblock %}
