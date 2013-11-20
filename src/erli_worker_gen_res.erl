@@ -9,11 +9,19 @@
 -module(erli_worker_gen_res).
 
 %% Webmachine Callbacks
--export([allowed_methods/2, as_json/2,
-	 content_types_provided/2, delete_completed/2,
-	 delete_resource/2, generate_etag/2, init/1,
-	 malformed_request/2, options/2, previously_existed/2,
-	 process_post/2, resource_exists/2,
+-export([init/1,
+	 allowed_methods/2,
+	 malformed_request/2,
+	 options/2,
+	 resource_exists/2,
+	 previously_existed/2,
+	 generate_etag/2,
+	 content_types_provided/2,
+	 as_json/2,
+	 as_html/2,
+	 process_post/2,
+	 delete_resource/2,
+	 delete_completed/2,
 	 finish_request/2]).
 
 -include_lib("include/erli_models.hrl").
@@ -180,19 +188,23 @@ generate_etag(RD, Ctx) ->
 
 -spec content_types_provided(rd(), term()) ->
 				    {[{string(), atom()}], rd(), term()}.
+content_types_provided(RD, {path, _Path} = Ctx) ->
+    {[{"application/json", as_json},
+      {"text/html", as_html}], RD, Ctx};
 content_types_provided(RD, Ctx) ->
     {[{"application/json", as_json}], RD, Ctx}.
+
 
 -spec as_json(rd(), {object_type(), object()}) ->
 		     {bitstring(), rd(), {object_type(), object()}};
 	     (rd(), {collection_type(), collection()}) ->
 		     {bitstring(), rd(), {collection_type(), collection()}}.
-as_json(RD, {ObjectType, Rec} = Ctx) when ?is_object(ObjectType) ->
+as_json(RD, {ObjectType, Obj} = Ctx) when ?is_object(ObjectType) ->
     maybe_record_visit(RD, Ctx),
     CollectionType =
 	erli_worker_utils:obj_type_to_col_type(ObjectType),
     Key = atom_to_binary(CollectionType, latin1),
-    Data = jsx:encode([{Key, erli_worker_utils:to_proplist(Rec)}]),
+    Data = jsx:encode([{Key, erli_worker_utils:to_proplist(Obj)}]),
     {Data, RD, Ctx};
 as_json(RD,
 	{CollectionType, {Meta, Collection}} = Ctx) ->
@@ -201,6 +213,13 @@ as_json(RD,
 			erli_worker_utils:to_proplist(Collection)},
 		       {<<"meta">>, Meta}]),
     {Data, RD, Ctx}.
+
+-spec as_html(rd(), {path, #path{}}) ->
+		     {bitstring(), rd(), {path, #path{}}}.
+as_html(RD, {path, Path} = Ctx) ->
+    {ok, Content} = details_dtl:render([path,
+					erli_worker_utils:to_proplist(Path)]),
+    {Content, RD, Ctx}.
 
 -spec process_post(rd(), term()) ->
 			  {true, rd(), term()} |

@@ -1,7 +1,7 @@
 %%%==========================================================
 %%% @author Moritz Windelen
 %%% @version 0.2
-%%% @doc The API root resource, with links to all API endpoints.
+%%% @doc The worker root resource, with links to all API endpoints.
 %%% @end
 %%%==========================================================
 
@@ -13,7 +13,8 @@
 	 options/2,
 	 generate_etag/2,
 	 content_types_provided/2,
-	 as_json/2]).
+	 as_json/2,
+	 as_html/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
 
@@ -43,7 +44,12 @@ generate_etag(RD, Ctx) ->
     {Etag, RD, Ctx}.
 
 content_types_provided(RD, Ctx) ->
-    {[{"application/json", as_json}], RD, Ctx}.
+    {[{"text/html", as_html},
+      {"application/json", as_json}], RD, Ctx}.
 
 as_json(RD, Ctx) ->
     {Ctx, RD, Ctx}.
+
+as_html(RD, Ctx) ->
+    {ok, Content} = index_dtl:render([]),
+    {Content, RD, Ctx}.
