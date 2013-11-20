@@ -188,7 +188,10 @@ generate_etag(RD, Ctx) ->
 
 -spec content_types_provided(rd(), term()) ->
 				    {[{string(), atom()}], rd(), term()}.
-content_types_provided(RD, {path, _Path} = Ctx) ->
+content_types_provided(RD, {path, Path} = Ctx) when is_record(Path, path) ->
+    {[{"application/json", as_json},
+      {"text/html", as_html}], RD, Ctx};
+content_types_provided(RD, path = Ctx) ->
     {[{"application/json", as_json},
       {"text/html", as_html}], RD, Ctx};
 content_types_provided(RD, Ctx) ->
@@ -214,11 +217,10 @@ as_json(RD,
 		       {<<"meta">>, Meta}]),
     {Data, RD, Ctx}.
 
--spec as_html(rd(), {path, #path{}}) ->
-		     {bitstring(), rd(), {path, #path{}}}.
 as_html(RD, {path, Path} = Ctx) ->
-    {ok, Content} = details_dtl:render([path,
-					erli_worker_utils:to_proplist(Path)]),
+    maybe_record_visit(RD, Ctx),
+    {ok, Content} = details_dtl:render([{path,
+					erli_worker_utils:to_proplist(Path)}]),
     {Content, RD, Ctx}.
 
 -spec process_post(rd(), term()) ->
