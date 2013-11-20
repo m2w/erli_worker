@@ -25,6 +25,9 @@ test:
 compile:
 	@$(REBAR) compile
 
+comp:
+	@$(REBAR) skip_deps=true compile
+
 all: dep compile
 
 generate: all
