@@ -36,7 +36,7 @@ http_body_to_form(Body) when is_binary(Body) ->
     lists:map(fun(KVP) ->
 		      case binary:split(KVP, <<"=">>, [trim]) of
 			  [Key, Value] -> {Key, Value};
-			  [Key] -> {Key, true}
+			  [Key] -> {Key, no_val}
 		      end
 	      end, KVPs);
 http_body_to_form(Body) when is_list(Body) ->
@@ -44,7 +44,7 @@ http_body_to_form(Body) when is_list(Body) ->
     lists:map(fun(KVP) ->
 		      case re:split(KVP, <<"=">>, [trim]) of
 			  [Key, Value] -> {Key, Value};
-			  [Key] -> {Key, true}
+			  [Key] -> {Key, no_val}
 		      end
 	      end, KVPs).
 
@@ -54,7 +54,7 @@ validate(Form, ValidatorSpecs) ->
     validate(Form, ValidatorSpecs, []).
 
 validate(Form, [{Key, Validators}|RemSpecs], Issues) ->
-    Value = proplists:get_value(Key, Form),
+    Value = proplists:get_value(Key, Form, <<>>),
     IsRequired = lists:member(required, Validators),
     case {Value, IsRequired}  of
 	{undefined, true} ->
@@ -76,7 +76,9 @@ validate(_Form, [], Issues) ->
     Issues.
 
 
--spec is_url(bitstring()) -> boolean().
+-spec is_url(bitstring() | no_val) -> boolean().
+is_url(no_val) ->
+    false;
 is_url(PossibleUrl) ->
     match =:= re:run(PossibleUrl,
 		     <<"\\b((?:https?://|www\\d{0,3}[.]|[a-z0-9.\\-]"
