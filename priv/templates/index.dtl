@@ -4,15 +4,25 @@
 {% block heading %}an Erlang URL shortener{% endblock %}
 
 {% block content %}
-erli requires javascript to function.
-<form id="erli_form">
-  <input name="target_url" id="target_url" type="text" placeholder="URL to shorten" />
-  <button type="submit">Shorten it!</button>
+<div id="msg-panel" class="panel radius">
+  <strong>erli requires javascript to function.</strong>
+</div>
+<form id="erli-form">
+  <div id="target-input" class="row">
+      <input id="target-url" name="target_url" type="text" placeholder="URL to shorten" />
+      <small id="target-url-msg" class="hide">msg</small>
+  </div>
+  <button type="submit" class="button radius">Shorten it!</button>
 </form>
-
+{% endblock %}
+{% block js %}
 <script type="text/javascript">
-  $("#erli_form").submit(function(e){
-  var target = $("#target_url").val();
+  $(document).ready(function(){
+  $("#msg-panel").hide();
+  });
+  $("#erli-form").submit(function(e){
+  var target = $("#target-url").val();
+  if (target != '') {
   $.ajax({url: "/targets/",
   dataType: "json",
   data: {target_url: target},
@@ -27,10 +37,18 @@ erli requires javascript to function.
   create_path(target_id);
   },
   422: function() {
-  alert("not processable");
+  $("#target-input").addClass("error");
+  var msg = "<span data-tooltip class='has-tip' title='Please provide at least a schema (e.g. \'http://\') or specify a subdomain (e.g. \'wwww\')'>The server thinks you didn't provide a valid URL/URI</span>"
+  $("#target-url-msg").html(msg).show();
+  $("#target-url").focus();
   }
   }
   });
+  } else {
+  $("#target-input").addClass("error");
+  $("#target-url-msg").text("Please don't forget to enter a URL to shorten").show();
+  $("#target-url").focus();
+  };
   e.preventDefault();
   });
 
@@ -41,6 +59,8 @@ erli requires javascript to function.
   type: "POST",
   success: function(data, status, jqXHR) {
   var path = data.paths;
+  $("#msg-panel").addClass("success").show();
+  console.log(path.href);
   }});
   };
 </script>

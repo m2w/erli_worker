@@ -6,7 +6,9 @@
 {% block content %}
 This shortened URL points to <a id="target" href="#"></a>:
 <img id="thumbnail">
+{% endblock %}
 
+{% block js %}
 <script type="text/javascript">
   $(document).ready(function() {
   $.ajax({url: "/paths/{{ path.id }}/target",

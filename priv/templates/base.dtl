@@ -1,14 +1,51 @@
 <!doctype html>
-<head>
-  <title>erli :: {% block title %}{% endblock %}</title>
-  <script type="text/javascript" src=" http://code.jquery.com/jquery-2.0.3.min.js"></script>
-</head>
-<body>
-  <div id="container">
-    <h1><a href="/">erli</a> <small>:: {% block heading %}{% endblock %}</small></h1>
-    <div id="main">{% block content %}{% endblock %}</div>
-  </div>
-  <footer>
-    For full access to <strong>erli</strong> functionality, please interact directly with the <a href="/docs/{% block docs %}{% endblock %}">API</a>.
-  </footer>
-</body>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>erli :: {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/foundation.css" />
+    <script src="/static/js/modernizr.js"></script>
+    <style type="text/css">
+      body {
+      text-align: center;
+      }
+      #wrapper {
+      width: 30rem;
+      padding: 5% 0;
+      margin: auto;
+      }
+      #container {
+      padding: 20% 0;
+      }
+      footer {
+      font-size: small;
+      }
+      small.error {
+      display: none;
+      }
+      div.panel.success {
+      background-color: #43ac6a;
+      border-color: #3c9a5e;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+    <div id="container">
+      <h1><a href="/">erli</a> <small>:: {% block heading %}{% endblock %}</small></h1>
+      <div id="main">{% block content %}{% endblock %}</div>
+      <footer>
+      For full access to <strong>erli</strong> functionality, please interact directly with the <a href="/docs/{% block docs %}{% endblock %}">API</a>.
+    </footer>
+
+    </div>
+    </div>
+    <script type="text/javascript" src=" http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="/static/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+    {% block js %}{% endblock %}
+  </body>
+</html>
