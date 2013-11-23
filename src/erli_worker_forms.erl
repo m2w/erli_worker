@@ -30,17 +30,20 @@
 %% API Methods
 %%-----------------------------------------------------------
 
+%% TODO: get rid of duplication
 -spec http_body_to_form(bitstring() | string()) -> form().
 http_body_to_form(Body) when is_binary(Body) ->
-    KVPs = binary:split(Body, <<"&">>, [global, trim]),
+    DecodedBody = mochiweb_util:unquote(Body),
+    KVPs = re:split(DecodedBody, <<"&">>, [trim]),
     lists:map(fun(KVP) ->
-		      case binary:split(KVP, <<"=">>, [trim]) of
+		      case re:split(KVP, <<"=">>, [trim]) of
 			  [Key, Value] -> {Key, Value};
 			  [Key] -> {Key, no_val}
 		      end
 	      end, KVPs);
 http_body_to_form(Body) when is_list(Body) ->
-    KVPs = re:split(Body, <<"&">>, [trim]),
+    DecodedBody = mochiweb_util:unquote(Body),
+    KVPs = re:split(DecodedBody, <<"&">>, [trim]),
     lists:map(fun(KVP) ->
 		      case re:split(KVP, <<"=">>, [trim]) of
 			  [Key, Value] -> {Key, Value};
@@ -54,7 +57,7 @@ validate(Form, ValidatorSpecs) ->
     validate(Form, ValidatorSpecs, []).
 
 validate(Form, [{Key, Validators}|RemSpecs], Issues) ->
-    Value = proplists:get_value(Key, Form, <<>>),
+    Value = proplists:get_value(Key, Form),
     IsRequired = lists:member(required, Validators),
     case {Value, IsRequired}  of
 	{undefined, true} ->
@@ -81,11 +84,9 @@ is_url(no_val) ->
     false;
 is_url(PossibleUrl) ->
     match =:= re:run(PossibleUrl,
-		     <<"\\b((?:https?://|www\\d{0,3}[.]|[a-z0-9.\\-]"
-		       "+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]"
-		       "+|(\\([^\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]"
-		       "+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};"
-		       ":'\".,<\>?«»“”‘’]))">>, [{capture, none}]).
+		     <<"\\b(?:https?://)?[a-zA-Z0-9_/\\-\\.]+\\.([A-Za-z/]"
+		       "{2,10})[a-zA-Z0-9_/\\&\\?\\=\\-\\.\\~\\%]*">>,
+		     [{capture, none}]).
 
 %%-----------------------------------------------------------
 %% Internal Methods
