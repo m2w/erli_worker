@@ -2,66 +2,81 @@
 
 {% block title %}an Erlang URL shortener{% endblock %}
 {% block heading %}an Erlang URL shortener{% endblock %}
+{% block head %}
+  <script type="text/javascript">
+   $(document).ready(function(){
+     $("#msg-panel").hide();
+   });
+  </script>
+{% endblock %}
 
 {% block content %}
-<div id="msg-panel" class="panel radius">
-  <strong>erli requires javascript to function.</strong>
-</div>
-<form id="erli-form">
-  <div id="target-input" class="row">
-      <input id="target-url" name="target_url" type="text" placeholder="URL to shorten" />
-      <small id="target-url-msg" class="hide">msg</small>
+  <div id="msg-panel" class="panel radius">
+    <strong>erli requires javascript to function.</strong>
   </div>
-  <button type="submit" class="button radius">Shorten it!</button>
-</form>
+  <form id="erli-form">
+    <div id="target-input" class="row">
+      <input id="target-url" name="target_url" type="text" placeholder="URL to shorten" />
+      <small id="target-url-msg" class="error hide">msg</small>
+    </div>
+    <button type="submit" class="button radius">Shorten it!</button>
+  </form>
 {% endblock %}
-{% block js %}
-<script type="text/javascript">
-  $(document).ready(function(){
-  $("#msg-panel").hide();
-  });
-  $("#erli-form").submit(function(e){
-  var target = $("#target-url").val();
-  if (target != '') {
-  $.ajax({url: "/targets/",
-  dataType: "json",
-  data: {target_url: target},
-  type: "POST",
-  statusCode: {
-  200: function(data, status, jqXHR) {
-  var target_id = data.targets.id;
-  create_path(target_id);
-  },
-  409: function(jqXHR, status, error) {
-  var target_id = jqXHR.responseJSON.conflictingEntity.id;
-  create_path(target_id);
-  },
-  422: function() {
-  $("#target-input").addClass("error");
-  var msg = "<span data-tooltip class='has-tip' title='Please provide at least a schema (e.g. \'http://\') or specify a subdomain (e.g. \'wwww\')'>The server thinks you didn't provide a valid URL/URI</span>"
-  $("#target-url-msg").html(msg).show();
-  $("#target-url").focus();
-  }
-  }
-  });
-  } else {
-  $("#target-input").addClass("error");
-  $("#target-url-msg").text("Please don't forget to enter a URL to shorten").show();
-  $("#target-url").focus();
-  };
-  e.preventDefault();
-  });
 
-  function create_path(target_id) {
-  $.ajax({url: "/paths/",
-  dataType: "json",
-  data: {target_id: target_id},
-  type: "POST",
-  success: function(data, status, jqXHR) {
-  var path = data.paths;
-  $("#msg-panel").addClass("success").show();
-  console.log(path.href);
-  }});
-  };
-</script>
+{% block js %}
+   $(document).ready(function(){
+     $("#target-url").keyup(function(e){
+       if ($("#target-input").hasClass("error")) {
+	 setTimeout(function() {
+	   $("#target-url-msg").fadeOut(function(){
+	     $("#target-url").removeClass("error");
+	   });
+	 }, 10000);
+       }});
+     $("#erli-form").submit(function(e){
+       var target = $("#target-url").val();
+       if (target != '') {
+	 $.ajax({url: "/targets/",
+		 dataType: "json",
+		 data: {target_url: target},
+		 type: "POST",
+		 statusCode: {
+	     200: function(data, status, jqXHR) {
+	       var target_id = data.targets.id;
+	       create_path(target_id);
+	     },
+	     409: function(jqXHR, status, error) {
+	       var target_id = jqXHR.responseJSON.conflictingEntity.id;
+	       create_path(target_id);
+	     },
+	     422: function() {
+	       var msg = "<span data-tooltip class='has-tip' title='Please provide at least a schema (e.g. \'http://\') or specify a subdomain (e.g. \'wwww\')'>The server thinks you didn't provide a valid URL/URI</span>"
+	       add_error(msg);
+	     }}
+		 });
+       } else {
+	 add_error("Please don't forget to enter a URL to shorten");
+       };
+       e.preventDefault();
+     });
+   });
+
+
+   function add_error(msg) {
+     $("#target-input").addClass("error");
+     $("#target-url-msg").html(msg).show();
+     $("#target-url").focus();
+   }
+
+   function create_path(target_id) {
+     $.ajax({url: "/paths/",
+	     dataType: "json",
+	     data: {target_id: target_id},
+	     type: "POST",
+	     success: function(data, status, jqXHR) {
+	 var path = data.paths;
+	 var msg = "Your URL was shortened to <a href='/"+ path.id +"'>"+ path.id + "</a>"
+	 $("#msg-panel").addClass("success").html(msg).show().fadeOut(10000);
+       }});
+   }
 {% endblock %}
