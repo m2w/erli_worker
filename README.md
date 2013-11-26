@@ -24,6 +24,14 @@ For collection types pagination is handled via the ``Range`` header. The data re
 Purging of unwanted or infringing content is community driven in the form of infringement flagging. Every DELETE request towards a path or target resource counts towards a configurable limit (15 by default). The limit is per target, since multiple paths may point to the same target. Once the limit is reached all paths pointing to said target are marked as banned, as is the target itself. All requests to banned resources are answered with a ``410 GONE``.
 Note that the current implementation is "dumb". To avoid storing user-related data on the server there is no way to prevent users from abusing the flagging process.
 
+### TODOs
+
+Currently the following still remains to be implemented for the worker:
+
+- Proper styling
+- Thumbnail generatiion
+- The TCP protocol and API endpoint
+
 ### TCP API Endpoint
 
 TODO
