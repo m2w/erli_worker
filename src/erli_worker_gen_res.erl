@@ -293,7 +293,15 @@ handle_post(Form, RD, {targets, {_Meta, _Collection}} = Ctx) ->
 			     [{<<"target_url">>, [required, is_url]}])
     of
 	valid ->
-	    Target = #target{url = proplists:get_value(<<"target_url">>, Form)},
+	    RawUrl = proplists:get_value(<<"target_url">>, Form),
+	    Url = case re:run(RawUrl, <<"\\b[a-zA-Z]+://">>,
+			      [{capture, none}]) of
+		      match ->
+			  RawUrl;
+		      nomatch ->
+			  <<"http://", RawUrl/bitstring>>
+		  end,
+	    Target = #target{url = Url},
 	    maybe_store(targets, Target, RD, Ctx);
 	Errors ->
 	    Body = jsx:encode([{<<"formErrors">>, Errors}]),
