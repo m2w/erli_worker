@@ -1,7 +1,7 @@
 {% extends "base.dtl" %}
 
-{% block title %}{{ path.id }}{% endblock %}
-{% block heading %}{{ path.id }}{% endblock %}
+{% block title %}details . {{ path.id }}{% endblock %}
+{% block heading %}details . {{ path.id }}{% endblock %}
 
 {% block content %}
 This shortened URL points to <a id="target" href="#"></a>:
@@ -9,7 +9,6 @@ This shortened URL points to <a id="target" href="#"></a>:
 {% endblock %}
 
 {% block js %}
-<script type="text/javascript">
   $(document).ready(function() {
   $.ajax({url: "/paths/{{ path.id }}/target",
   dataType: "json",
@@ -26,5 +25,4 @@ This shortened URL points to <a id="target" href="#"></a>:
   window.location = target;
   e.preventDefault();
   })};
-</script>
 {% endblock %}
