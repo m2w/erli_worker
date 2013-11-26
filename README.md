@@ -1,8 +1,10 @@
-# erli_api_worker
+# erli_worker
 
-**erli_api_worker** is the backend worker of the [erli][erli] URL shortener.
+**erli_worker** is the backend worker process of the [erli][erli] URL shortener.
 
-Its CRUD API is accessible via HTTP and through a simple binary protocol via TCP and uses mnesia as storage backend. The API is designed to be self-explanatory and -discoverable. However, here is a quick overview:
+Its CRUD API is accessible via HTTP and through a simple binary protocol via TCP. It uses mnesia as storage backend. The API is designed to be self-explanatory and -discoverable. However, here is a quick overview:
+
+The worker also comes with a very basic frontend for simpler interaction.
 
 ### HTTP API Endpoints and Applicable Methods
 
@@ -31,6 +33,7 @@ Currently the following still remains to be implemented for the worker:
 - Proper styling
 - Thumbnail generatiion
 - The TCP protocol and API endpoint
+- Full documentation
 
 ### TCP API Endpoint
 
